@@ -19,6 +19,20 @@ void test(Int n)
     std::cout << n << '\n';
 }
 
+/*
+ * test = $74 65 73 74
+ * 0111 0100 0110 0101 0111 0011 0111 0100
+ * base 36 is between 5 & 6 bits per digit
+ */
+std::string base36_encode(std::string_view in)
+{
+    namespace bic = base_integer_conversion;
+    using namespace boost::multiprecision;
+    cpp_int encoder;
+    import_bits(encoder, in.begin(), in.end(), 8);
+    return bic::ntos(encoder, 36);
+}
+
 int main(int argc, const char** argv)
 {
     int plain_int { INT_MAX / 2 };
@@ -38,4 +52,8 @@ int main(int argc, const char** argv)
 
     auto checked { std::numeric_limits<checked_int1024_t>::max() };
     test(checked);
+
+    char to_encode[] { "test" };
+    std::string encoded { base36_encode(to_encode) };
+    std::cout << to_encode << " -> " << encoded << '\n';
 }
