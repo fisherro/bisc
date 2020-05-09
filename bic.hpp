@@ -57,7 +57,10 @@ namespace base_integer_conversion {
             n = (n * base) + cton(c);
         }
 
-        if (negative) return -n;
+        //TODO: Throw exception for negative string with unsigned integer
+        if constexpr (std::numeric_limits<N>::is_signed) {
+            if (negative) return -n;
+        }
         return n;
     }
 
@@ -70,9 +73,11 @@ namespace base_integer_conversion {
         }
 
         bool negative{false};
-        if (n < 0) {
-            negative = true;
-            n = -n;
+        if constexpr (std::numeric_limits<N>::is_signed) {
+            if (n < 0) {
+                negative = true;
+                n = -n;
+            }
         }
 
         std::string_view lookup{"0123456789abcdefghijklmnopqrstuvwxyz"};

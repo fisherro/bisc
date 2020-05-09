@@ -8,13 +8,34 @@
 
 #include "bic.hpp"
 
-int main(int argc, const char** argv)
+template <typename Int>
+void test(Int n)
 {
     namespace bic = base_integer_conversion;
-    using Int = boost::multiprecision::cpp_int;
-
-    Int n { INTMAX_MAX };
-    n *= 2;
+    std::cout << n << " -> ";
     auto s { bic::ntos(n, 36) };
-    std::cout << n << '\n' << s << '\n' << bic::ston<Int>(s, 36) << '\n';
+    std::cout << s << " -> ";
+    n = bic::ston<Int>(s, 36);
+    std::cout << n << '\n';
+}
+
+int main(int argc, const char** argv)
+{
+    int plain_int { INT_MAX / 2 };
+    test(plain_int);
+
+    unsigned plain_unsigned { UINT_MAX / 2 };
+    test(plain_unsigned);
+
+    using namespace boost::multiprecision;
+
+    cpp_int big_int { INTMAX_MAX };
+    big_int *= 2;
+    test(big_int);
+
+    auto kibi_uint { std::numeric_limits<uint1024_t>::max() };
+    test(kibi_uint);
+
+    auto checked { std::numeric_limits<checked_int1024_t>::max() };
+    test(checked);
 }
