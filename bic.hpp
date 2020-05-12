@@ -37,10 +37,10 @@ namespace base_integer_conversion {
         size_t max_base() const { return my_digits.size(); }
 
         template <typename N>
-        size_t digit_count(N n) const { return digit_count(n, max_base()); }
+        size_t count_digits(N n) const { return count_digits(n, max_base()); }
 
         template <typename N>
-        size_t digit_count(N n, const unsigned base) const;
+        size_t count_digits(N n, const unsigned base) const;
 
         template <typename N, typename Range>
         N ston(Range s) const { return ston<N>(s, max_base()); }
@@ -86,7 +86,7 @@ namespace base_integer_conversion {
     //      currently builds a string even when writing to an output iterator.
     //      If we can fix that, though, then this will become more efficient.
     template <typename N>
-    size_t converter::digit_count(N n, const unsigned base) const
+    size_t converter::count_digits(N n, const unsigned base) const
     {
         auto end { ntos(n, counting_iterator{}, base) };
         return end.count;

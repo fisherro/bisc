@@ -82,12 +82,12 @@ void report(bool b)
     else std::cout << "FAIL\n";
 }
 
-void test_digit_count()
+void test_count_digits()
 {
     namespace bic = base_integer_conversion;
     auto base36 { bic::converter::converter36() };
-    report(2 == base36.digit_count(36));
-    report(3 == base36.digit_count(123, 10));
+    report(2 == base36.count_digits(36));
+    report(3 == base36.count_digits(123, 10));
 }
 
 int main(int argc, const char** argv)
@@ -122,5 +122,5 @@ int main(int argc, const char** argv)
     std::cout << base32_encode("abcde") << '\n';
     std::cout << base32_encode("abcdef") << '\n';
 
-    test_digit_count();
+    test_count_digits();
 }
