@@ -7,9 +7,25 @@
 
 namespace base_integer_conversion {
 
-    //TODO: Should the converter methods really have a default base of 10?
-    //      What if the my_digits has less than 10 digits?
-    //      If using converter directly, maybe assume default is max base?
+    //If I wanted to depend on boost, I could use make_function_iterator.
+    struct counting_iterator {
+        using iterator_category = std::output_iterator_tag;
+        using value_type = void;
+        using difference_type = void;
+        using pointer = void;
+        using reference = void;
+
+        size_t count{0};
+
+        counting_iterator& operator=(const counting_iterator&)
+        { return *this; }
+
+        template <typename T>
+        void operator=(const T&) {}
+
+        counting_iterator& operator*() { return *this; }
+        counting_iterator& operator++() { ++count; return *this; }
+    };
 
     //The converter class provides for custom digit sets,
     //which can support larger bases.
@@ -65,12 +81,15 @@ namespace base_integer_conversion {
         return base36;
     }
 
+    //Note: This isn't really better than using the version that returns a
+    //      string & then returning size() because the underlying code
+    //      currently builds a string even when writing to an output iterator.
+    //      If we can fix that, though, then this will become more efficient.
     template <typename N>
     size_t converter::digit_count(N n, const unsigned base) const
     {
-        //TODO: Rewrite this to not actually do the work?
-        std::string s { ntos(n, base) };
-        return s.size();
+        auto end { ntos(n, counting_iterator{}, base) };
+        return end.count;
     }
 
     template <typename N, typename First, typename Last>
@@ -130,6 +149,7 @@ namespace base_integer_conversion {
         return ston<N>(begin(s), end(s), base);
     }
 
+    //TODO: It would be nice if this didn't have to allocate.
     template <typename N, typename Out>
     Out converter::ntos(N n, Out out, const unsigned base) const
     {
@@ -179,7 +199,6 @@ namespace base_integer_conversion {
     //TODO: ntos that will upcase
     //TODO: ntos overflow detection?
     //TODO: ston that will skip (specified?) separator characters?
-    //TODO: transliteration to other digit sets?
 
     template <typename N>
     N ston(std::string_view s, const unsigned base = 10)
