@@ -63,8 +63,11 @@ namespace base_integer_conversion {
         template <typename N>
         std::string ntos(N n, const unsigned base) const;
 
+#if 0
+        //Need way to disambiguate between this & (n, base) overload.
         template <typename N, typename Out>
         Out ntos(N n, Out out) const { return ntos(n, out, max_base()); }
+#endif
 
         template <typename N, typename Out>
         Out ntos(N n, Out out, const unsigned base) const;
