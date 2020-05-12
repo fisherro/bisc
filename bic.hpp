@@ -25,6 +25,7 @@ namespace base_integer_conversion {
 
         counting_iterator& operator*() { return *this; }
         counting_iterator& operator++() { ++count; return *this; }
+        counting_iterator& operator++(int) { ++count; return *this; }
     };
 
     //The converter class provides for custom digit sets,
@@ -69,8 +70,8 @@ namespace base_integer_conversion {
         Out ntos(N n, Out out, const unsigned base) const;
 
     private:
-        template <typename N>
-        std::string ntos_(N n, const unsigned base) const;
+        template <typename N, typename Out>
+        Out ntos_(N n, Out out, const unsigned base) const;
 
         const std::string my_digits {"0123456789abcdefghijklmnopqrstuvwxyz"};
     };
@@ -81,14 +82,10 @@ namespace base_integer_conversion {
         return base36;
     }
 
-    //Note: This isn't really better than using the version that returns a
-    //      string & then returning size() because the underlying code
-    //      currently builds a string even when writing to an output iterator.
-    //      If we can fix that, though, then this will become more efficient.
     template <typename N>
     size_t converter::count_digits(N n, const unsigned base) const
     {
-        auto end { ntos(n, counting_iterator{}, base) };
+        auto end { ntos_(n, counting_iterator{}, base) };
         return end.count;
     }
 
@@ -160,13 +157,14 @@ namespace base_integer_conversion {
     template <typename N>
     std::string converter::ntos(N n, const unsigned base) const
     {
-        std::string s { ntos_(n, base) };
+        std::string s;
+        ntos_(n, std::back_inserter(s), base);
         std::reverse(s.begin(), s.end());
         return s;
     }
 
-    template <typename N>
-    std::string converter::ntos_(N n, const unsigned base) const
+    template <typename N, typename Out>
+    Out converter::ntos_(N n, Out out, const unsigned base) const
     {
         if ((base < 2) or (base > max_base())) {
             std::ostringstream message;
@@ -182,14 +180,13 @@ namespace base_integer_conversion {
             }
         }
 
-        std::string s;
         for (; n > 0; n /= base) {
             size_t i { n % base };
-            s.push_back(my_digits[i]);
+            *out++ = my_digits[i];
         }
 
-        if (negative) s.push_back('-');
-        return s;
+        if (negative) *out++ = '-';
+        return out;
     }
 
     //TODO: ston that will infer base from prefix
