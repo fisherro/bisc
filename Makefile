@@ -10,7 +10,12 @@ LDFLAGS+=-L/opt/local/lib
 #LDFLAGS+=-lboost_filesystem-mt
 LDFLAGS+=-ltbb
 
-all: test
+BINARIES=test
+
+all: $(BINARIES)
+
+clean:
+	rm -f $(BINARIES)
 
 #/opt/local/lib/libboost_atomic-mt.dylib
 #/opt/local/lib/libboost_chrono-mt.dylib

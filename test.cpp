@@ -1,3 +1,6 @@
+//TODO: Test digit_count
+//TODO: Do validation tests
+
 #include <cstdint>
 #include <iostream>
 
