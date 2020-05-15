@@ -108,7 +108,7 @@ size_t max_base() const;
 The `max_base` member function returns the maximum base which the converter supports. This is equal to the size of the digit set.
 
 ```cpp
-size_t bisc::converter::count_digits(auto n);
+size_t bisc::converter::count_digits(auto n) const;
 size_t bisc::converter::count_digits(auto n, const unsigned base) const;
 ```
 
