@@ -1,5 +1,3 @@
-//TODO: Do validation tests
-
 #include <cstdint>
 #include <iostream>
 
@@ -61,28 +59,64 @@ std::string base36_decode(std::string_view in)
 
 //I used this site to validate my output.
 //https://cryptii.com/pipes/base32
+//Could operate in chunks of 5 input bytes.
 std::string base32_encode(std::string_view in)
 {
     namespace bic = base_integer_conversion;
     using namespace boost::multiprecision;
+    //Import bits
     cpp_int encoder;
     import_bits(encoder, in.begin(), in.end(), 8);
+    //Bit shift
     auto padding = 5 - ((in.size() * 8) % 5);
     if ((padding > 0) && (padding < 5)) encoder <<= padding;
+    //ntos
     //The RFC 4648 digit set:
     bic::converter converter{"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
     std::string out { converter.ntos(encoder) };
+    //Padding
     padding = 8 - (out.size() % 8);
     if ((padding > 0) and (padding < 8)) out += std::string(padding, '=');
     return out;
 }
 
+//Could operator in chunks of 8 input bytes.
+std::string base32_decode(std::string_view in)
+{
+    namespace bic = base_integer_conversion;
+    using namespace boost::multiprecision;
+    //Remove padding
+    auto last { in.find_last_not_of('=') };
+    if (in.npos == last) return "";
+    auto padding { in.size() - last - 1};
+    in.remove_suffix(padding);
+    //ston
+    //The RFC 4648 digit set:
+    bic::converter converter{"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
+    cpp_int decoder { converter.ston<cpp_int>(in) };
+    //Bit shift
+    switch (padding) {
+        case 0: /* no-op */    break;
+        case 1: decoder >>= 3; break;
+        case 3: decoder >>= 1; break;
+        case 4: decoder >>= 4; break;
+        case 6: decoder >>= 2; break;
+        default: return "error";
+    }
+    //Export bits
+    std::string out;
+    export_bits(decoder, std::back_inserter(out), 8);
+    return out;
+}
+
 void test_base32(std::string_view in, std::string_view expected)
 {
-    //TODO: Round-trip
-    const auto out { base32_encode(in) };
-    std::cout << (out == expected? "PASS": "FAIL") << ": base32: "
-        << in << " -> " << out << '\n';
+    const auto out  { base32_encode(in)  };
+    const auto back { base32_decode(out) };
+    bool ok { out == expected };
+    if (ok) ok = { in == back };
+    std::cout << (ok? "PASS": "FAIL") << ": base32: "
+        << in << " -> " << out << " -> " << back << '\n';
 }
 
 void test_base36(std::string_view in)

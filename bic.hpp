@@ -50,9 +50,12 @@ namespace base_integer_conversion {
         template <typename N, typename Range>
         N ston(Range s, const unsigned base) const;
 
+#if 0
+        //Need way to disambiguate between this & (s, base) overload.
         template <typename N, typename First, typename Last>
         N ston(First first, Last last) const
         { return ston<N>(first, last, max_base()); }
+#endif
 
         template <typename N, typename First, typename Last>
         N ston(First first, Last last, const unsigned base) const;
@@ -109,7 +112,11 @@ namespace base_integer_conversion {
         auto cton = [&digits = this->my_digits, base](char c)
         {
             char lower = std::tolower(c);
-            auto n = digits.find(lower);
+            auto n {
+                (c == lower)
+                    ? digits.find(c)
+                    : digits.find_first_of({c, lower, '\0'})
+            };
             if (n >= base) {
                 std::ostringstream message;
                 message << __func__ << ": bad digit = " << c;
