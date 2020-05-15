@@ -8,7 +8,7 @@
 
 #include <boost/type_index.hpp>
 
-#include "bic.hpp"
+#include "bisc.hpp"
 
 const std::vector<std::pair<std::string, std::string>> base32_test_data {
     { "a",      "ME======" },
@@ -22,9 +22,8 @@ const std::vector<std::pair<std::string, std::string>> base32_test_data {
 template <typename Int>
 void test(Int n)
 {
-    namespace bic = base_integer_conversion;
-    auto s { bic::ntos     (n, 36) };
-    Int  m { bic::ston<Int>(s, 36) };
+    auto s { bisc::ntos     (n, 36) };
+    Int  m { bisc::ston<Int>(s, 36) };
     std::cout << (n == m? "PASS": "FAIL") << ": ntos/ston<"
         << boost::typeindex::type_id<Int>().pretty_name() << ">: "
         << n << " -> \"" << s << "\" -> " << m << '\n';
@@ -40,18 +39,16 @@ void test(Int n)
 //have in memory.
 std::string base36_encode(std::string_view in)
 {
-    namespace bic = base_integer_conversion;
     using namespace boost::multiprecision;
     cpp_int encoder;
     import_bits(encoder, in.begin(), in.end(), 8);
-    return bic::ntos(encoder, 36);
+    return bisc::ntos(encoder, 36);
 }
 
 std::string base36_decode(std::string_view in)
 {
-    namespace bic = base_integer_conversion;
     using namespace boost::multiprecision;
-    cpp_int decoder { bic::ston<cpp_int>(in, 36) };
+    cpp_int decoder { bisc::ston<cpp_int>(in, 36) };
     std::string out;
     export_bits(decoder, std::back_inserter(out), 8);
     return out;
@@ -62,7 +59,6 @@ std::string base36_decode(std::string_view in)
 //Could operate in chunks of 5 input bytes.
 std::string base32_encode(std::string_view in)
 {
-    namespace bic = base_integer_conversion;
     using namespace boost::multiprecision;
     //Import bits
     cpp_int encoder;
@@ -72,7 +68,7 @@ std::string base32_encode(std::string_view in)
     if ((padding > 0) && (padding < 5)) encoder <<= padding;
     //ntos
     //The RFC 4648 digit set:
-    bic::converter converter{"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
+    bisc::converter converter{"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
     std::string out { converter.ntos(encoder) };
     //Padding
     padding = 8 - (out.size() % 8);
@@ -83,7 +79,6 @@ std::string base32_encode(std::string_view in)
 //Could operator in chunks of 8 input bytes.
 std::string base32_decode(std::string_view in)
 {
-    namespace bic = base_integer_conversion;
     using namespace boost::multiprecision;
     //Remove padding
     auto last { in.find_last_not_of('=') };
@@ -92,7 +87,7 @@ std::string base32_decode(std::string_view in)
     in.remove_suffix(padding);
     //ston
     //The RFC 4648 digit set:
-    bic::converter converter{"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
+    bisc::converter converter{"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
     cpp_int decoder { converter.ston<cpp_int>(in) };
     //Bit shift
     switch (padding) {
@@ -129,8 +124,7 @@ void test_base36(std::string_view in)
 
 void test_count_digits()
 {
-    namespace bic = base_integer_conversion;
-    auto base36 { bic::converter::converter36() };
+    auto base36 { bisc::converter::converter36() };
     auto report = [&base36](int n, int base, size_t expected_count)
     {
         auto count {

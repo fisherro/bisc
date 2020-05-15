@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-namespace base_integer_conversion {
+namespace bisc {
 
     //If I wanted to depend on boost, I could use make_function_iterator.
     struct counting_iterator {

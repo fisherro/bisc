@@ -1,6 +1,12 @@
-# Why?
+# Bisc
 
-## String to integer
+Bisc is a header-only C++ library for converting arbitrary integer types to strings and back using any base.
+
+Bisc might stand for something like "Base Integer String Conversions". Or maybe not.
+
+## Why?
+
+### String to integer
 
 Say you want to convert an string to an arbitrary integer type using an arbitrary base in generic code.
 
@@ -10,7 +16,7 @@ Say you want to convert an string to an arbitrary integer type using an arbitrar
 
 `Boost::lexical_cast` is great for converting between various integer types and strings. It works with any type that is streamable. But it only works for base 10.
 
-## Integer to string
+### Integer to string
 
 Now what if you want to convert an integer of arbitrary type to a string using an arbitrary base?
 
@@ -22,30 +28,29 @@ Now what if you want to convert an integer of arbitrary type to a string using a
 
 `Std::to_chars` supports arbitrary bases but only works with built-in types.
 
-# This library
+## This library
 
-## Example
+### Example
 
-Presenting `ston` and `ntos`:
+Presenting `bisc::ston` and `bisc::ntos`:
 
 ```cpp
-namespace bic = base_integer_conversion;
 using Int = boost::multiprecision::cpp_int;
 
 Int n = Int(INTMAX_MAX);
 n *= 2;
-std::string s { bic::ntos(n, 36) };
-std::cout << s << '\n' << bic::ston<Int>(s, 36) << '\n';
+std::string s { bisc::ntos(n, 36) };
+std::cout << s << '\n' << bisc::ston<Int>(s, 36) << '\n';
 ```
 
 Note that these functions don't do any of the whitespace skipping or prefix handling that some others do. (Maybe convenience wrapper functions will be provided for that kind of thing.)
 
-## ston
+### bisc::ston
 
 ```cpp
-#include <bic.hpp>
+#include <bisc.hpp>
 template <typename N>
-N ston(std::string_view s, const unsigned base = 10);
+N bisc::ston(std::string_view s, const unsigned base = 10);
 ```
 
 Parses a string as an integer.
@@ -62,12 +67,12 @@ An exception will be thrown if `s` contains any invalid digits (except for any l
 
 An exception will be thrown if an invalid `base` is specified.
 
-## ntos
+### bisc::ntos
 
 ```cpp
-#include <bic.hpp>
+#include <bisc.hpp>
 template <typename N>
-std::string ntos(N n, const unsigned base = 10);
+std::string bisc::ntos(N n, const unsigned base = 10);
 ```
 
 Renders an integer as a string.
@@ -79,3 +84,64 @@ Renders an integer as a string.
 An exception will be thrown if an invalid `base` is specified.
 
 For negative integers, the string will begin with `-`. For positive integers, the string will _not_ begin with `+`.
+
+### bisc::converter
+
+The `bisc::converter` class provides the same functionality as `bisc::ston` and `bisc::ntos` but using a user-defined set of digits. It can also support bases greater than 36, and it provides iterator-based overloads as well.
+
+```cpp
+bisc::converter::converter(std::string_view digits);
+```
+
+A `bisc::converter` is constructed with the digit set to use.
+
+```cpp
+bisc::converter& bisc::converter::coverter36();
+```
+
+The static `converter36` member function will return the converter that is used for `bisc::ston` and `bisc::ntos`.
+
+```cpp
+size_t max_base() const;
+```
+
+The `max_base` member function returns the maximum base which the converter supports. This is equal to the size of the digit set.
+
+```cpp
+size_t bisc::converter::count_digits(auto n);
+size_t bisc::converter::count_digits(auto n, const unsigned base) const;
+```
+
+The `count_digits` member function tells you how many digits the given number will be when converted to a string. If a base isn't given, the converter's max base is used.
+
+```cpp
+auto bisc::converter::ston(auto s) const;
+auto bisc::converter::ston(auto s, const unsigned base) const;
+```
+
+These two `ston` overloads convert a range of `char` to an integer. The integer type will need to be provided as a template parameter. If no base is provided, the converter's max base is used.
+
+```cpp
+//Example:
+bisc::converter converter("ABCDEFGH");
+std::uint64_t n = converter.ston<std::uint64_t>(UINT64_MAX);
+```
+
+```cpp
+auto bisc::converter::ston(auto first, auto last, const unsigned base) const;
+```
+
+This overload of `ston` takes a pair of iterators to a range of `char`. Otherwise, it is the same as the `ston` overloads above.
+
+```cpp
+std::string bisc::converter::ntos(auto n) const;
+std::string bisc::converter::ntos(auto n, const unsigned base) const;
+```
+
+These two overloads of `ntos` convert the given integer into a `std::string`. If no base is provided, the max base of the converter is used.
+
+```cpp
+auto bisc::converter::ntos(auto n, auto out, const unsigned base) const;
+```
+
+This overload of `ntos` writes the `char`s generated to the given output iterator. It returns an iterator one past the last `char` written.
