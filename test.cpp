@@ -10,6 +10,15 @@
 
 #include "bic.hpp"
 
+const std::vector<std::pair<std::string, std::string>> base32_test_data {
+    { "a",      "ME======" },
+    { "ab",     "MFRA====" },
+    { "abc",    "MFRGG===" },
+    { "abcd",   "MFRGGZA=" },
+    { "abcde",  "MFRGGZDF" },
+    { "abcdef", "MFRGGZDFMY======" },
+};
+
 template <typename Int>
 void test(Int n)
 {
@@ -48,13 +57,6 @@ std::string base36_decode(std::string_view in)
     return out;
 }
 
-//a      -> ME======
-//ab     -> MFRA====
-//abc    -> MFRGG===
-//abcd   -> MFRGGZA=
-//abcde  -> MFRGGZDF
-//abcdef -> MFRGGZDFMY======
-
 //I used this site to validate my output.
 //https://cryptii.com/pipes/base32
 std::string base32_encode(std::string_view in)
@@ -73,11 +75,12 @@ std::string base32_encode(std::string_view in)
     return out;
 }
 
-void test_base32(std::string_view in)
+void test_base32(std::string_view in, std::string_view expected)
 {
-    //TODO: Round-trip & validation
+    //TODO: Round-trip
     const auto out { base32_encode(in) };
-    std::cout << "base32: " << in << " -> " << out << '\n';
+    std::cout << (out == expected? "PASS": "FAIL") << ": "
+        << "base32: " << in << " -> " << out << '\n';
 }
 
 void report(bool b)
@@ -122,13 +125,13 @@ int main(int argc, const char** argv)
     auto checked { std::numeric_limits<checked_int1024_t>::max() };
     test(checked);
 
+    for (const auto& pair: base32_test_data) {
+        test_base32(pair.first, pair.second);
+    }
+
     std::vector<std::string> test_strings {
         "a", "ab", "abc", "abcd", "abcde", "abcdef"
     };
-
-    for (const auto& s: test_strings) {
-        test_base32(s);
-    }
 
     for (const auto& s: test_strings) {
         test_base36(s);
