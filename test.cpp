@@ -173,4 +173,8 @@ int main(int argc, const char** argv)
     }
 
     test_count_digits();
+
+    bisc::converter converter("ABCDEFGH");
+    std::uint64_t n = converter.ston<std::uint64_t>(std::string_view("ACEG"));
+    std::cout << n << '\n';
 }

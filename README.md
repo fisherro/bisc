@@ -122,12 +122,6 @@ auto bisc::converter::ston(auto s, const unsigned base) const;
 These two `ston` overloads convert a range of `char` to an integer. The integer type will need to be provided as a template parameter. If no base is provided, the converter's max base is used.
 
 ```cpp
-//Example:
-bisc::converter converter("ABCDEFGH");
-std::uint64_t n = converter.ston<std::uint64_t>(UINT64_MAX);
-```
-
-```cpp
 auto bisc::converter::ston(auto first, auto last, const unsigned base) const;
 ```
 

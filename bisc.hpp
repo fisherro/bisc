@@ -43,6 +43,8 @@ namespace bisc {
         template <typename N>
         size_t count_digits(N n, const unsigned base) const;
 
+        //TODO: Make ston overload that works with string literals.
+
         template <typename N, typename Range>
         N ston(Range s) const { return ston<N>(s, max_base()); }
 
