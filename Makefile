@@ -5,6 +5,8 @@ CXXFLAGS+=-Wall
 CXXFLAGS+=-pedantic
 CXXFLAGS+=-I/opt/local/include
 #CXXFLAGS+=-g
+## Silence linker warnings about boost having different visibility settings
+CXXFLAGS+=-fvisibility=hidden
 
 LDFLAGS+=-L/opt/local/lib
 #LDFLAGS+=-lboost_filesystem-mt
