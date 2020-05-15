@@ -8,6 +8,8 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #pragma GCC diagnostic pop
 
+#include <boost/type_index.hpp>
+
 #include "bic.hpp"
 
 const std::vector<std::pair<std::string, std::string>> base32_test_data {
@@ -23,11 +25,11 @@ template <typename Int>
 void test(Int n)
 {
     namespace bic = base_integer_conversion;
-    std::cout << n << " -> ";
-    auto s { bic::ntos(n, 36) };
-    std::cout << s << " -> ";
-    n = bic::ston<Int>(s, 36);
-    std::cout << n << '\n';
+    auto s { bic::ntos     (n, 36) };
+    Int  m { bic::ston<Int>(s, 36) };
+    std::cout << (n == m? "PASS": "FAIL") << ": ntos/ston<"
+        << boost::typeindex::type_id<Int>().pretty_name() << ">: "
+        << n << " -> \"" << s << "\" -> " << m << '\n';
 }
 
 //If we put the padding in the front, does it become transparent?
@@ -79,30 +81,35 @@ void test_base32(std::string_view in, std::string_view expected)
 {
     //TODO: Round-trip
     const auto out { base32_encode(in) };
-    std::cout << (out == expected? "PASS": "FAIL") << ": "
-        << "base32: " << in << " -> " << out << '\n';
-}
-
-void report(bool b)
-{
-    if (b) std::cout << "PASS\n";
-    else std::cout << "FAIL\n";
+    std::cout << (out == expected? "PASS": "FAIL") << ": base32: "
+        << in << " -> " << out << '\n';
 }
 
 void test_base36(std::string_view in)
 {
     const auto out { base36_encode(in) };
     const auto back { base36_decode(out) };
-    std::cout << "base36: " << in << " -> " << out << " -> " << back << ' ';
-    report(back == in);
+    std::cout << (back == in? "PASS": "FAIL") << ": base36: "
+        << in << " -> " << out << " -> " << back << '\n';
 }
 
 void test_count_digits()
 {
     namespace bic = base_integer_conversion;
     auto base36 { bic::converter::converter36() };
-    report(2 == base36.count_digits(36));
-    report(3 == base36.count_digits(123, 10));
+    auto report = [&base36](int n, int base, size_t expected_count)
+    {
+        auto count {
+            (36 == base)
+                ? base36.count_digits(n)
+                : base36.count_digits(n, base)
+        };
+        std::cout << (count == expected_count? "PASS": "FAIL")
+            << ": base36.count_digits(" << n << ", " << base << ") -> "
+            << count << " (expected " << expected_count << ")\n";
+    };
+    report(36, 36, 2);
+    report(123, 10, 3);
 }
 
 int main(int argc, const char** argv)
